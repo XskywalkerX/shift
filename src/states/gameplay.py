@@ -96,44 +96,38 @@ class GameplayState(State):
 
     def spawn_enemy(self):
 
-        while True:
+        for _ in range(50):  # tries
 
             x = random.randint(0, WIDTH)
             y = random.randint(0, HEIGHT)
 
-            distance = (
-                abs(x - self.player.rect.x) +
-                abs(y - self.player.rect.y)
-            )
+            candidate = pygame.Rect(x, y, 40, 40)
 
-            if distance > 400:
-                break
+            # avoid player too close
+            if candidate.colliderect(self.player.rect.inflate(200, 200)):
+                continue
 
-        enemy_type = random.randint(0, 2)
+            # avoid obstacles
+            blocked = False
+            for o in self.obstacles:
+                if candidate.colliderect(o.rect):
+                    blocked = True
+                    break
 
-        if enemy_type == 0:
+            if blocked:
+                continue
 
-            self.enemies.append(
-                Enemy(x, y)
-            )
-
-        elif enemy_type == 1:
-
-            from src.entities.enemy import TankEnemy
-
-            self.enemies.append(
-                TankEnemy(x, y)
-            )
-
-        else:
-
-            from src.entities.enemy import ShooterEnemy
-
-            self.enemies.append(
-                ShooterEnemy(x, y)
-            )
+            self.enemies.append(Enemy(x, y))
+            return
 
     def handle_events(self, events):
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                from src.states.pause import PauseState
+                self.game.state_machine.change_state(
+                    PauseState(self.game, self)
+                )
 
         for event in events:
 
