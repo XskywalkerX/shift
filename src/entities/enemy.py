@@ -53,6 +53,7 @@ class Enemy:
         self.knockback_velocity = 0
 
         self.dead = False
+        self.dying = False
 
         self.direction = 1
 
@@ -170,7 +171,7 @@ class Enemy:
 
         if self.health <= 0:
 
-            self.dead = True
+            self.dying = True
 
             self.state = "death"
 
@@ -212,16 +213,20 @@ class Enemy:
         obstacles
     ):
 
-        if self.dead:
-
+        if self.dying:
             self.current_animation.update(dt)
 
+            if self.current_animation.finished:
+                self.dead = True  # NOW we remove it
+            return
+
+        if self.dead:
             return
 
         if self.state in [
             "hurt",
             "attack"
-        ]:
+        ] and not self.dying:
 
             self.current_animation.update(dt)
 
@@ -343,6 +348,9 @@ class Enemy:
             self.update_platform_physics(
                 platforms
             )
+
+            if self.dying:
+                return
 
         self.current_animation.update(dt)
 
@@ -522,9 +530,6 @@ class ShooterEnemy(Enemy):
     ):
 
         if self.dead:
-
-            self.current_animation.update(dt)
-
             return
 
         self.shoot_timer -= dt

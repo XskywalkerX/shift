@@ -285,7 +285,26 @@ class GameplayState(State):
 
                 if attack_box.colliderect(enemy.rect):
 
-                    enemy.health -= self.player.attack_damage
+                    enemy.take_damage(
+                        self.player.attack_damage,
+                        self.player.direction
+                    )
+
+                    if enemy.health <= 0:
+
+                            self.score += (
+                                100 *
+                                self.player.combo_multiplier
+                            )
+
+                            self.player.score += (
+                                100 *
+                                self.player.combo_multiplier
+                            )
+
+                            self.player.combo_multiplier += 1
+
+                            self.player.combo_decay = 3
 
         for platform in self.platforms:
             platform.update()
@@ -300,7 +319,7 @@ class GameplayState(State):
                 self.world_manager,
                 self.platforms,
                 self.obstacles
-            )
+            )            
 
         for projectile in self.projectiles:
 
@@ -353,6 +372,9 @@ class GameplayState(State):
                 e.current_animation.finished
             )
         ]
+
+        for e in self.enemies:
+            print(e.dead, e.current_animation.finished)
 
         if self.player.death_animation_finished():
 
