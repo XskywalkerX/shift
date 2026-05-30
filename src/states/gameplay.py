@@ -8,6 +8,8 @@ from src.core.state_machine import State
 
 from src.entities.player import Player
 from src.entities.enemy import Enemy
+from src.entities.enemy import ShooterEnemy
+from src.entities.enemy import TankEnemy
 from src.entities.platform import Platform
 from src.entities.obstacle import Obstacle
 from src.entities.projectile import Projectile
@@ -23,6 +25,28 @@ class GameplayState(State):
 
     def __init__(self, game):
         super().__init__(game)
+
+        self.wave_config = {
+            1: {"basic": 5},
+            2: {"basic": 8},
+            3: {"basic": 6, "shooter": 3},
+            4: {"basic": 10, "shooter": 4},
+            5: {"basic": 8, "shooter": 5, "tank": 2},
+        }
+
+        self.wave_started = False
+
+        self.wave_remaining_spawns = {}
+
+        self.show_tutorial_message = True
+
+        self.wave_active_timer = 0
+
+        self.wave = 0
+        self.wave_state = "countdown"
+        self.wave_timer = 1.0
+        self.wave_countdown = 3
+        self.wave_transitioning = False
 
         self.player = Player(500, 300)
 
@@ -96,28 +120,41 @@ class GameplayState(State):
 
     def spawn_enemy(self):
 
-        for _ in range(50):  # tries
+        if self.wave_state != "active":
+            return
 
-            x = random.randint(0, WIDTH)
-            y = random.randint(0, HEIGHT)
+        available_types = []
+
+        if self.wave_remaining_spawns.get("basic", 0) > 0:
+            available_types.append(("basic", Enemy))
+
+        if self.wave_remaining_spawns.get("shooter", 0) > 0:
+            available_types.append(("shooter", ShooterEnemy))
+
+        if self.wave_remaining_spawns.get("tank", 0) > 0:
+            available_types.append(("tank", TankEnemy))
+
+        if not available_types:
+            return
+
+        enemy_key, enemy_class = random.choice(available_types)
+
+        # find position (keep your safe spawn logic)
+        for _ in range(50):
+            x = random.randint(0, WIDTH - 40)
+            y = random.randint(0, HEIGHT - 40)
 
             candidate = pygame.Rect(x, y, 40, 40)
 
-            # avoid player too close
             if candidate.colliderect(self.player.rect.inflate(200, 200)):
                 continue
 
-            # avoid obstacles
-            blocked = False
-            for o in self.obstacles:
-                if candidate.colliderect(o.rect):
-                    blocked = True
-                    break
-
-            if blocked:
+            if any(candidate.colliderect(o.rect) for o in (self.obstacles + self.platforms)):
                 continue
 
-            self.enemies.append(Enemy(x, y))
+            self.enemies.append(enemy_class(x, y))
+
+            self.wave_remaining_spawns[enemy_key] -= 1
             return
 
     def handle_events(self, events):
@@ -172,6 +209,20 @@ class GameplayState(State):
                         )
                     )
 
+    def start_wave(self):
+        self.wave_state = "countdown"
+        self.wave_countdown = 3
+        self.wave_timer = 1.0
+        self.spawn_timer = float("inf")
+
+        self.enemies.clear()
+        self.wave_transitioning = False
+        self.wave_active_timer = 0
+
+        self.wave_remaining_spawns = self.wave_config.get(self.wave, {"basic": 5}).copy()
+
+        self.wave_started = False
+
     def update(self, dt):
 
         self.world_manager.update(dt)
@@ -181,17 +232,40 @@ class GameplayState(State):
 
         self.instability.update(dt)
 
-        self.spawn_timer -= dt
+        if self.wave_state == "countdown":
 
-        if self.spawn_timer <= 0:
+            self.spawn_timer = 999999  # hard freeze
 
-            if len(self.enemies) < 8:
-                self.spawn_enemy()
+            self.wave_timer -= dt
 
-            self.spawn_timer = max(
-                1.5,
-                4 - self.instability.level * 0.01
-            )
+            if self.wave_timer <= 0:
+                self.wave_timer = 1
+                self.wave_countdown -= 1
+
+                if self.wave_countdown <= 0:
+                    self.wave_state = "active"
+                    self.show_tutorial_message = False
+                    self.spawn_timer = 1.0
+
+                    self.wave_transitioning = False
+                    self.wave_active_timer = 0
+
+                    self.wave_started = True
+
+
+        if self.wave_state == "active":
+            self.wave_active_timer += dt
+            self.spawn_timer -= dt
+
+            if self.spawn_timer <= 0:
+
+                if len(self.enemies) < min(8, sum(self.wave_remaining_spawns.values())):
+                    self.spawn_enemy()
+
+                self.spawn_timer = max(
+                    1.5,
+                    4 - self.instability.level * 0.01
+                )
 
         self.player.update(
             dt,
@@ -290,6 +364,17 @@ class GameplayState(State):
 
             return
 
+        if (
+            self.wave_state == "active"
+            and self.wave_started
+            and self.wave_active_timer > 1.0
+            and len(self.enemies) == 0
+            and all(v <= 0 for v in self.wave_remaining_spawns.values())
+        ):
+            self.wave += 1
+            self.start_wave()
+
+
 
     def render(self, screen):
 
@@ -335,6 +420,12 @@ class GameplayState(State):
             (255, 255, 255)
         )
 
+        wave_text = self.font.render(
+            f"WAVE {self.wave}",
+            True,
+            (255, 200, 80)
+        )
+
         combo_text = self.font.render(
             f"Combo x{self.player.combo_multiplier}",
             True,
@@ -354,6 +445,7 @@ class GameplayState(State):
         )
 
         world_surface.blit(score_text, (20, 20))
+        world_surface.blit(wave_text, (20, 180))
         world_surface.blit(combo_text, (20, 60))
         world_surface.blit(health_text, (20, 100))
         world_surface.blit(instability_text, (20, 140))
@@ -362,3 +454,30 @@ class GameplayState(State):
             world_surface,
             (offset_x, offset_y)
         )
+
+        if self.show_tutorial_message:
+
+            tutorial = self.font.render(
+                "TAB swap | WASD move | LMB attack | SHIFT dash",
+                True,
+                (255, 255, 255)
+            )
+
+            screen.blit(
+                tutorial,
+                (50, HEIGHT - 80)
+            )
+
+        if self.wave_state == "countdown" and self.wave != 0:
+            if self.wave_countdown > 0:
+                msg = f"WAVE {self.wave}"
+                sub = str(self.wave_countdown)
+            else:
+                msg = "WAVE START"
+                sub = "FIGHT"
+
+            title = self.font.render(msg, True, (255, 200, 80))
+            subtext = self.font.render(sub, True, (255, 255, 255))
+
+            screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//2 - 40))
+            screen.blit(subtext, (WIDTH//2 - subtext.get_width()//2, HEIGHT//2 + 10))
