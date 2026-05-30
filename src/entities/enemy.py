@@ -39,6 +39,8 @@ class Enemy:
 
         self.velocity_y = 0
 
+        self.score_given = False
+
         self.health = 50
         self.max_health = 50
 
@@ -169,7 +171,7 @@ class Enemy:
 
         self.current_animation.reset()
 
-        if self.health <= 0:
+        if self.health <= 0 and not self.dead:
 
             self.dying = True
 

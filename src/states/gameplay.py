@@ -290,21 +290,14 @@ class GameplayState(State):
                         self.player.direction
                     )
 
-                    if enemy.health <= 0:
+                    if enemy.health <= 0 and not enemy.score_given:
+                        enemy.score_given = True
 
-                            self.score += (
-                                100 *
-                                self.player.combo_multiplier
-                            )
+                        self.score += 100 * self.player.combo_multiplier
+                        self.player.score += 100 * self.player.combo_multiplier
 
-                            self.player.score += (
-                                100 *
-                                self.player.combo_multiplier
-                            )
-
-                            self.player.combo_multiplier += 1
-
-                            self.player.combo_decay = 3
+                        self.player.combo_multiplier += 1
+                        self.player.combo_decay = 3
 
         for platform in self.platforms:
             platform.update()
