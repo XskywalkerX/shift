@@ -454,7 +454,7 @@ class Player:
             )
         )
 
-    def render(self, screen):
+    def render(self, screen, screen2):
 
         frame = self.current_animation.get_frame()
 
@@ -501,7 +501,7 @@ class Player:
 
         # Background
         pygame.draw.rect(
-            screen,
+            screen2,
             (50, 50, 50),
             (
                 20,
@@ -513,7 +513,7 @@ class Player:
 
         # Health
         pygame.draw.rect(
-            screen,
+            screen2,
             (50, 255, 50),
             (
                 20,
@@ -524,7 +524,7 @@ class Player:
         )
 
         pygame.draw.rect(
-            screen,
+            screen2,
             (50, 50, 50),
             (
                 20,
@@ -535,7 +535,7 @@ class Player:
         )
 
         pygame.draw.rect(
-            screen,
+            screen2,
             (50, 150, 255),
             (
                 20,

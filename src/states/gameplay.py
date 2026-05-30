@@ -34,6 +34,10 @@ class GameplayState(State):
             5: {"basic": 8, "shooter": 5, "tank": 2},
         }
 
+        self.camera_x = 0
+        self.camera_y = 0
+        self.camera_zoom = 1.3  # start small like 1.2–1.5
+
         self.wave_started = False
 
         self.wave_remaining_spawns = {}
@@ -223,6 +227,14 @@ class GameplayState(State):
 
         self.wave_started = False
 
+
+    def apply_camera(self, pos):
+        x, y = pos
+        return (
+            (x - self.camera_x) * self.camera_zoom,
+            (y - self.camera_y) * self.camera_zoom
+        )
+
     def update(self, dt):
 
         self.world_manager.update(dt)
@@ -273,6 +285,13 @@ class GameplayState(State):
             self.platforms,
             self.obstacles
         )
+
+        target_x = self.player.rect.centerx - WIDTH // 2
+        target_y = self.player.rect.centery - HEIGHT // 2
+
+        # smooth follow
+        self.camera_x += (target_x - self.camera_x) * 0.08
+        self.camera_y += (target_y - self.camera_y) * 0.08
 
         if self.player.state in [
             "attack1",
@@ -427,7 +446,7 @@ class GameplayState(State):
                 self.world_manager
             )
 
-        self.player.render(world_surface)
+        self.player.render(world_surface, screen)
 
         score_text = self.font.render(
             f"Score: {self.score}",
@@ -459,16 +478,18 @@ class GameplayState(State):
             (100, 180, 255)
         )
 
-        world_surface.blit(score_text, (20, 20))
-        world_surface.blit(wave_text, (20, 180))
-        world_surface.blit(combo_text, (20, 60))
-        world_surface.blit(health_text, (20, 100))
-        world_surface.blit(instability_text, (20, 140))
 
         screen.blit(
             world_surface,
-            (offset_x, offset_y)
+            self.apply_camera((offset_x, offset_y))
         )
+
+        screen.blit(score_text, (20, 20))
+        screen.blit(wave_text, (20, 180))
+        screen.blit(combo_text, (20, 60))
+        screen.blit(health_text, (20, 100))
+        screen.blit(instability_text, (20, 140))
+
 
         if self.show_tutorial_message:
 
