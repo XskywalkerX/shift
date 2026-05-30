@@ -122,14 +122,15 @@ class GameplayState(State):
 
     def handle_events(self, events):
 
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                from src.states.pause import PauseState
-                self.game.state_machine.change_state(
-                    PauseState(self.game, self)
-                )
-
         for event in events:
+            
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    from src.states.pause import PauseState
+                    self.game.state_machine.change_state(
+                        PauseState(self.game, self)
+                    )
 
             if event.type == pygame.KEYDOWN:
 
