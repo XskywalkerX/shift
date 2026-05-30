@@ -396,8 +396,6 @@ class Player:
 
         if grounded:
 
-            print(self.state)
-
             if moving:
 
                 if self.state != "run":
@@ -424,9 +422,6 @@ class Player:
             else:
                 self.state = "fall"
                 self.current_animation = self.animations["fall"]
-
-
-        print("grounded: ", grounded)
 
         mouse_pressed = pygame.mouse.get_pressed()
 
