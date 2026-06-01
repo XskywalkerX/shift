@@ -5,6 +5,7 @@ from settings import *
 
 from src.core.spritesheet import SpriteSheet
 from src.core.animation import Animation
+from src.core.audio import AudioManager
 
 
 class Player:
@@ -15,6 +16,14 @@ class Player:
             40,
             40
         )
+
+        AudioManager.load()
+
+        self.rect.left = max(0, self.rect.left)
+        self.rect.right = min(WORLD_WIDTH, self.rect.right)
+
+        self.rect.top = max(0, self.rect.top)
+        self.rect.bottom = min(WORLD_HEIGHT, self.rect.bottom)
 
         self.score = 0
 
@@ -169,6 +178,7 @@ class Player:
 
         self.state = "hurt"
 
+        AudioManager.play("hurt")
 
         self.current_animation = self.animations["hurt"]
 
@@ -180,8 +190,10 @@ class Player:
         self.combo_multiplier = 1
 
         if self.health <= 0:
+            AudioManager.play("death")
             self.dead = True
             self.state = "death"
+            AudioManager.play("death")
 
     def update(
         self,
@@ -290,6 +302,15 @@ class Player:
         else:
             self.current_animation = self.animations["idle"]
 
+        self.rect.clamp_ip(
+            pygame.Rect(
+                0,
+                0,
+                WORLD_WIDTH,
+                WORLD_HEIGHT
+            )
+        )
+
     def platformer_update(
         self,
         dt,
@@ -312,6 +333,7 @@ class Player:
                 moving = True
 
         if (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and not self.dashing and self.stamina >= self.dash_cost:
+            AudioManager.play("dash")
             self.dashing = True
             self.dash_timer = self.dash_duration
             self.state = "dash"
@@ -449,12 +471,12 @@ class Player:
             pygame.Rect(
                 0,
                 0,
-                WIDTH,
-                HEIGHT
+                WORLD_WIDTH,
+                WORLD_HEIGHT
             )
         )
 
-    def render(self, screen, screen2):
+    def render(self, screen, screen2, gameplay):
 
         frame = self.current_animation.get_frame()
 
@@ -490,57 +512,4 @@ class Player:
         screen.blit(
             scaled,
             (draw_x, draw_y)
-        )
-
-        pygame.draw.rect(
-            screen,
-            (0, 255, 0),
-            self.rect,
-            2
-        )
-
-        # Background
-        pygame.draw.rect(
-            screen2,
-            (50, 50, 50),
-            (
-                20,
-                20,
-                300,
-                20
-            )
-        )
-
-        # Health
-        pygame.draw.rect(
-            screen2,
-            (50, 255, 50),
-            (
-                20,
-                20,
-                300 * (self.health / self.max_health),
-                20
-            )
-        )
-
-        pygame.draw.rect(
-            screen2,
-            (50, 50, 50),
-            (
-                20,
-                50,
-                300,
-                15
-            )
-        )
-
-        pygame.draw.rect(
-            screen2,
-            (50, 150, 255),
-            (
-                20,
-                50,
-                300 * (self.stamina / self.max_stamina),
-                15
-            )
         )
