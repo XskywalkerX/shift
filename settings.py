@@ -7,6 +7,9 @@ info = pygame.display.Info()
 WIDTH = info.current_w
 HEIGHT = info.current_h
 
+WORLD_WIDTH = 1200
+WORLD_HEIGHT = 1200
+
 FPS = 60
 
 TITLE = "SHIFT"
