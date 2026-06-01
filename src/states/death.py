@@ -41,7 +41,7 @@ class DeathState:
         screen.fill((0, 0, 0))
 
         title = self.font.render(
-            "YOU DIED",
+            "VOCÊ MORREU :D",
             True,
             (255, 0, 0)
         )
