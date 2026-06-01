@@ -406,13 +406,6 @@ class Enemy:
 
         pygame.draw.rect(
             screen,
-            (255, 0, 0),
-            self.rect,
-            2
-        )
-
-        pygame.draw.rect(
-            screen,
             (40, 40, 40),
             (
                 self.rect.x,
@@ -530,6 +523,15 @@ class ShooterEnemy(Enemy):
         platforms,
         obstacles
     ):
+        
+        if self.dying:
+
+            self.current_animation.update(dt)
+
+            if self.current_animation.finished:
+                self.dead = True
+
+            return
 
         if self.dead:
             return
