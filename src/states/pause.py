@@ -28,7 +28,7 @@ class PauseState(State):
         overlay.fill((0, 0, 0, 160))
         screen.blit(overlay, (0, 0))
 
-        text = self.font.render("PAUSED", True, (255, 255, 255))
+        text = self.font.render(":D", True, (255, 255, 255))
         screen.blit(
             text,
             (
