@@ -67,7 +67,7 @@ class MenuState(State):
         # ==========================
 
         pygame.mixer.music.load(
-            "assets/audio/menu_theme.mp3"
+            "assets/audio/menu_theme.ogg"
         )
 
         pygame.mixer.music.set_volume(0.5)

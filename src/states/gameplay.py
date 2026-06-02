@@ -6,7 +6,7 @@ from settings import *
 
 from src.core.state_machine import State
 
-from src.core.fonts import FONT_MEDIUM
+from src.core.fonts import get_font
 from src.entities.player import Player
 from src.entities.enemy import Enemy
 from src.entities.enemy import ShooterEnemy
@@ -98,7 +98,7 @@ class GameplayState(State):
         self.generate_world()
 
         AudioManager.play_music(
-            "assets/audio/battle.mp3"
+            "assets/audio/battle.ogg"
         )
 
     def generate_world(self):
@@ -668,19 +668,19 @@ class GameplayState(State):
 
         self.player.render(world_surface, screen, self)
 
-        score_text = FONT_MEDIUM.render(
+        score_text = get_font(36).render(
             f"Score: {self.score}",
             True,
             (255, 255, 255)
         )
 
-        wave_text = FONT_MEDIUM.render(
+        wave_text = get_font(36).render(
             f"Horda {self.wave}",
             True,
             (255, 200, 80)
         )
 
-        combo_text = FONT_MEDIUM.render(
+        combo_text = get_font(36).render(
             f"Combo x{self.player.combo_multiplier}",
             True,
             (255, 255, 100)
@@ -708,7 +708,7 @@ class GameplayState(State):
 
         if self.show_tutorial_message:
 
-            tutorial = FONT_MEDIUM.render(
+            tutorial = get_font(36).render(
                 "TAB swap | WASD andar | LMB atacar | SHIFT dash",
                 True,
                 (255, 255, 255)
@@ -727,8 +727,8 @@ class GameplayState(State):
                 msg = "HORDA INICIANDO"
                 sub = "LUTE PARA SOBREVIVER!"
 
-            title = FONT_MEDIUM.render(msg, True, (255, 200, 80))
-            subtext = FONT_MEDIUM.render(sub, True, (255, 255, 255))
+            title = get_font(36).render(msg, True, (255, 200, 80))
+            subtext = get_font(36).render(sub, True, (255, 255, 255))
 
             screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//2 - 40))
             screen.blit(subtext, (WIDTH//2 - subtext.get_width()//2, HEIGHT//2 + 10))

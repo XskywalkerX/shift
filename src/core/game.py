@@ -1,4 +1,5 @@
 import pygame
+import asyncio
 
 from settings import *
 from src.core.state_machine import StateMachine
@@ -10,8 +11,7 @@ class Game:
         pygame.init()
 
         self.screen = pygame.display.set_mode(
-                        (0, 0),
-                        pygame.FULLSCREEN
+            (WIDTH, HEIGHT)
         )
 
         pygame.display.set_caption(TITLE)
@@ -22,7 +22,7 @@ class Game:
         self.state_machine = StateMachine()
         self.state_machine.change_state(MenuState(self))
 
-    def run(self):
+    async def run(self):
         while self.running:
             dt = self.clock.tick(FPS) / 1000
 
@@ -39,5 +39,6 @@ class Game:
             self.state_machine.render(self.screen)
 
             pygame.display.flip()
+            await asyncio.sleep(0)
 
         pygame.quit()
