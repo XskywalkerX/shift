@@ -19,22 +19,22 @@ class AudioManager:
         )
 
         cls.sounds["hit"] = pygame.mixer.Sound(
-            "assets/audio/hit.wav"
+            "assets/audio/hit.ogg"
         )
 
         cls.sounds["shot"] = pygame.mixer.Sound(
-            "assets/audio/shot.wav"
+            "assets/audio/shot.ogg"
         )
 
         cls.sounds["hurt"] = pygame.mixer.Sound(
-            "assets/audio/hurt.wav"
+            "assets/audio/hurt.ogg"
         )
 
         cls.sounds["death"] = pygame.mixer.Sound(
-            "assets/audio/death.wav"
+            "assets/audio/death.ogg"
         )
         cls.sounds["dash"] = pygame.mixer.Sound(
-            "assets/audio/dash.mp3"
+            "assets/audio/dash.ogg"
         )
 
         cls.update_volumes()
