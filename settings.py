@@ -1,11 +1,15 @@
 import pygame
 
-pygame.init()
+print("pygame =", pygame)
+print("pygame file =", getattr(pygame, "__file__", None))
+print("pygame version =", getattr(pygame, "__version__", None))
+print("has init =", hasattr(pygame, "init"))
 
-info = pygame.display.Info()
+if hasattr(pygame, "init"):
+    pygame.init()
 
-WIDTH = info.current_w
-HEIGHT = info.current_h
+WIDTH = 1280
+HEIGHT = 720
 
 WORLD_WIDTH = 1200
 WORLD_HEIGHT = 1200
